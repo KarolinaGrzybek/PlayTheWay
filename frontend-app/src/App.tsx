@@ -343,21 +343,6 @@ function App() {
                          <div className="p-3 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 rounded-xl font-bold text-center flex items-center justify-center gap-2">
                            <span>🎉</span> Brawo! Prawidłowa odpowiedź!
                          </div>
-                         {story.choices && story.choices.length > 0 && (
-                           <div className="flex flex-col gap-2">
-                             <p className="text-xs font-bold text-slate-400 uppercase tracking-wider pl-1">Idź dalej →</p>
-                             {story.choices.map((choice: any, idx: number) => {
-                               const displayTitle = typeof choice === 'string' ? choice : choice.button_text || 'Opcja ' + (idx + 1);
-                               const displayDesc = typeof choice === 'string' ? 'Kliknij, aby wybrać' : choice.action_description || '';
-                               return (
-                                 <button key={idx} onClick={() => makeChoice(idx)} className="w-full group bg-blue-50 dark:bg-blue-900/20 border-2 border-[#3B82F6] hover:bg-blue-100 p-4 rounded-xl text-left transition-all hover:shadow-md flex items-center justify-between">
-                                   <div><p className="font-bold text-[#2563EB] dark:text-blue-300 text-base mb-1">{displayTitle}</p><p className="text-xs font-medium text-slate-500 dark:text-slate-400">{displayDesc}</p></div>
-                                   <div className="w-8 h-8 rounded-full bg-[#3B82F6] flex items-center justify-center"><ChevronRight className="w-5 h-5 text-white" /></div>
-                                 </button>
-                               );
-                             })}
-                           </div>
-                         )}
                        </motion.div>
                     )}
                     {quizError && !quizSolved && (
