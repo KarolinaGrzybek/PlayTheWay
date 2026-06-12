@@ -1,0 +1,675 @@
+{
+  "name": "PlayTheWay - Gra Paragrafowa v1",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "playtheway",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "1942cfe6-18a3-40c8-99df-8a7127705b45",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -576,
+        128
+      ],
+      "webhookId": "7dbec53c-e237-4ec3-acb3-2ccd3d72b60d"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appED8vhuNAzKSVqX",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "Aktywne_Sesje",
+          "mode": "name"
+        },
+        "filterByFormula": "={Session_ID} = \"{{ $json.body.sessionId }}\"",
+        "options": {
+          "fields": [
+            "Session_ID",
+            "Age_Group",
+            "City",
+            "Story_Summary",
+            "Current_Step_Index",
+            "Total_Steps",
+            "Inventory",
+            "Available_POIs",
+            "Visited_POIs",
+            "Quest_Goal"
+          ]
+        }
+      },
+      "id": "def1ff15-6580-4995-ac39-4c3973c55207",
+      "name": "Airtable: Check Session",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2,
+      "position": [
+        -368,
+        128
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "nv0DB17z3tfHMoZD",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "id": "cond-new",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty"
+              }
+            }
+          ],
+          "combinator": "and",
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          }
+        },
+        "options": {}
+      },
+      "id": "a1a1dccb-b05f-4a0f-b363-10be2850b98f",
+      "name": "If: New Session?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -144,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://nominatim.openstreetmap.org/search?q={{ encodeURIComponent($('Webhook').item.json.body.city) }}&format=json&limit=1",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "PlayTheWay/1.0 (student project)"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3180f884-784c-4a20-ba79-2b11fffd26e7",
+      "name": "Nominatim: Geocode City",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        80,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Budujemy zapytanie Overpass API dla POI w promieniu 5km\nconst geoData = $input.item.json;\nconst lat = parseFloat((geoData.lat || geoData[0]?.lat) || 52.2297);\nconst lon = parseFloat((geoData.lon || geoData[0]?.lon) || 21.0122);\nconst radius = 5000; // 5km\n\n// Szukamy miejsc spacerowych: parki, fontanny, rzeźby, punkty widokowe, zamki\nconst query = `[out:json][timeout:25];\n(\n  node[\"leisure\"=\"park\"](around:${radius},${lat},${lon});\n  node[\"amenity\"=\"fountain\"](around:${radius},${lat},${lon});\n  node[\"tourism\"=\"viewpoint\"](around:${radius},${lat},${lon});\n  node[\"tourism\"=\"artwork\"](around:${radius},${lat},${lon});\n  node[\"historic\"=\"castle\"](around:${radius},${lat},${lon});\n  node[\"historic\"=\"monument\"](around:${radius},${lat},${lon});\n  node[\"tourism\"=\"museum\"](around:${radius},${lat},${lon});\n  way[\"leisure\"=\"park\"](around:${radius},${lat},${lon});\n  way[\"tourism\"=\"attraction\"](around:${radius},${lat},${lon});\n);\nout center body 40;`;\n\nreturn [{ json: { query, centerLat: lat, centerLon: lon } }];\n"
+      },
+      "id": "a000bcd1-5137-48ea-aeb7-d278e2d4985f",
+      "name": "Build Overpass Query",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        304,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://overpass-api.de/api/interpreter",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "data",
+              "value": "={{ $json.query }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c2a06ca1-3283-458a-9a67-312e8d01b06b",
+      "name": "Overpass: Get POIs",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        528,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================\n// PULA POI I WYBÓR PUNKTU STARTOWEGO\n// ============================================\nconst overpassData = $('Overpass: Get POIs').item.json;\nconst webhookBody = $('Webhook').item.json.body;\n\nconst elements = overpassData.elements || [];\nconst allPOIs = [];\n\nfor (const el of elements) {\n  const lat = el.lat || el.center?.lat;\n  const lon = el.lon || el.center?.lon;\n  const tags = el.tags || {};\n  const name = tags.name || tags['name:pl'] || tags['name:en'];\n  \n  if (!lat || !lon || !name) continue;\n  \n  let priority = 1;\n  if (tags.leisure === 'park') priority = 4;\n  if (tags.amenity === 'fountain') priority = 4;\n  if (tags.tourism === 'viewpoint') priority = 3;\n  if (tags.tourism === 'artwork') priority = 3;\n  if (tags.historic === 'castle') priority = 2;\n  if (tags.historic === 'monument') priority = 2;\n  if (tags.tourism === 'museum') priority = 0;\n  \n  const nameLower = name.toLowerCase();\n  const sadWords = ['powstań', 'poległ', 'walcząca', 'lotnika', 'ofiar', 'męczenni', 'katyń', 'cmentarz'];\n  if (tags.historic === 'monument' && sadWords.some(w => nameLower.includes(w))) priority = -1;\n  \n  const isDuplicate = allPOIs.some(p => p.name.toLowerCase() === nameLower);\n  if (isDuplicate || priority === -1) continue;\n  \n  allPOIs.push({\n    name, lat: parseFloat(lat), lon: parseFloat(lon),\n    category: tags.leisure || tags.amenity || tags.historic || tags.tourism || 'atrakcja',\n    priority\n  });\n}\n\nallPOIs.sort((a, b) => b.priority - a.priority);\nif (allPOIs.length < 3) return [{ json: { error: 'Za mało punktów' } }];\n\n// Wybieramy losowy start z TOP 5\nconst startIndex = Math.floor(Math.random() * Math.min(5, allPOIs.length));\nconst startPOI = allPOIs.splice(startIndex, 1)[0];\n\nreturn [{\n  json: {\n    startPOI: startPOI,\n    availablePOIs: allPOIs.slice(0, 15), // Bierzemy max 15 najlepszych\n    city: webhookBody.city,\n    ageGroup: webhookBody.ageGroup,\n    sessionId: webhookBody.sessionId\n  }\n}];"
+      },
+      "id": "eacbf3f8-e758-40d2-9bb8-3b1e4a2d6c39",
+      "name": "Select POI Pool",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        752,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appED8vhuNAzKSVqX",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "Aktywne_Sesje",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Session_ID": "={{ $('Edit Fields').item.json.Session_ID }}",
+            "City": "={{ $('Edit Fields').item.json.City }}",
+            "Age_Group": "={{ $('Edit Fields').item.json.Age_Group }}",
+            "Status": "W trakcie gry",
+            "Story_Summary": "Początek przygody.",
+            "Available_POIs": "={{ $('Edit Fields').item.json.Available_POIs }}",
+            "Visited_POIs": "={{ $('Edit Fields').item.json.Visited_POIs }}",
+            "Inventory": "={{ $('Edit Fields').item.json.Inventory }}",
+            "Quest_Goal": "={{ $('Edit Fields').item.json.Quest_Goal }}",
+            "Current_Step_Index": 0,
+            "Total_Steps": 8
+          },
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "492b1877-add9-4368-8246-a2e8b5ef782b",
+      "name": "Airtable: Create Session",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2,
+      "position": [
+        1168,
+        -96
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "nv0DB17z3tfHMoZD",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const webhookData = $('Webhook').item.json.body;\nconst airtableRecord = $('Airtable: Check Session').item.json;\nconst isNewSession = !airtableRecord.id;\n\nfunction haversine(lat1, lon1, lat2, lon2) {\n  const R = 6371;\n  const dLat = (lat2 - lat1) * Math.PI / 180;\n  const dLon = (lon2 - lon1) * Math.PI / 180;\n  const a = Math.sin(dLat/2)**2 + Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180) * Math.sin(dLon/2)**2;\n  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));\n}\n\nlet availablePOIs = [];\nlet visitedPOIs = [];\nlet inventory = [];\nlet questGoal = \"\";\nlet currentPOI = null;\nlet currentStepIndex = 0;\nlet totalSteps = 8;\nlet airtableId = airtableRecord.id;\n\nif (isNewSession) {\n  const initData = $('Select POI Pool').item.json;\n  currentPOI = initData.startPOI;\n  availablePOIs = initData.availablePOIs || [];\n  visitedPOIs = [currentPOI];\n  inventory = [];\n  airtableId = $('Airtable: Create Session').item.json.id;\n  questGoal = \"GENERATE_NEW\";\n} else {\n  const fields = airtableRecord.fields || {};\n  try { availablePOIs = JSON.parse(fields.Available_POIs || '[]'); } catch(e) {}\n  try { visitedPOIs = JSON.parse(fields.Visited_POIs || '[]'); } catch(e) {}\n  try { inventory = JSON.parse(fields.Inventory || '[]'); } catch(e) {}\n  questGoal = fields.Quest_Goal || \"\";\n  currentStepIndex = parseInt(fields.Current_Step_Index || '0');\n  totalSteps = parseInt(fields.Total_Steps || '8');\n  \n  const chosenTargetName = webhookData.userChoice;\n  \n  // Znajdz wybrany cel i zrob z niego currentPOI\n  if (chosenTargetName && chosenTargetName !== 'Start') {\n    const foundIdx = availablePOIs.findIndex(p => p.name === chosenTargetName);\n    if (foundIdx >= 0) {\n      currentPOI = availablePOIs.splice(foundIdx, 1)[0];\n      visitedPOIs.push(currentPOI);\n    } else {\n      currentPOI = availablePOIs.length > 0 ? availablePOIs.shift() : visitedPOIs[visitedPOIs.length-1];\n    }\n  } else {\n    currentPOI = visitedPOIs[visitedPOIs.length-1];\n  }\n}\n\n// Znajdz 2 najblizsze z availablePOIs\nif (currentPOI && availablePOIs.length > 0) {\n  availablePOIs.sort((a,b) => haversine(currentPOI.lat, currentPOI.lon, a.lat, a.lon) - haversine(currentPOI.lat, currentPOI.lon, b.lat, b.lon));\n}\nconst optionA = availablePOIs.length > 0 ? availablePOIs[0] : null;\nconst optionB = availablePOIs.length > 1 ? availablePOIs[1] : null;\n\nconst agePrompts = {\n  \"3-6\": \"Pisz prosto, jak do 4-latka. Radosny ton, magia.\",\n  \"7-11\": \"Pisz jak do odkrywcy. Zagadki detektywistyczne, lekka fabuła.\",\n  \"12+\": \"Pisz konkretnie, fakty historyczne w klimacie urban fantasy.\"\n};\n\nreturn [{\n  json: {\n    city: webhookData.city || \"miasto\",\n    ageGroup: webhookData.ageGroup || \"7-11\",\n    agePrompt: agePrompts[webhookData.ageGroup] || agePrompts[\"7-11\"],\n    currentPOI,\n    optionA,\n    optionB,\n    availablePOIs,\n    visitedPOIs,\n    inventory,\n    questGoal,\n    currentStepIndex,\n    totalSteps,\n    airtableId,\n    userChoice: webhookData.userChoice || \"Start\"\n  }\n}];"
+      },
+      "id": "e35ce9f2-ebd0-4196-912c-dfc5d8f26911",
+      "name": "Prepare Context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1392,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const ctx = $('Prepare Context').item.json;\nconst item = $input.item.json;\nif (ctx.error) return [{ json: { error: ctx.error } }];\n\nlet parsed = {};\ntry {\n  let rawText = '';\n  if (typeof item.text === 'string') rawText = item.text;\n  else if (item.content && item.content.parts) rawText = item.content.parts[0].text;\n  else if (item.candidates) rawText = item.candidates[0].content.parts[0].text;\n  \n  if (rawText) {\n    const cleanText = rawText.replace(/\\s*```json\\n?/gi, '').replace(/\\s*```\\n?/gi, '').trim();\n    parsed = JSON.parse(cleanText);\n  }\n} catch(e) {\n  parsed = { narrative_text: \"Błąd AI. \" + e.message, choices: [] };\n}\n\nparsed.city = ctx.city;\nparsed.airtableId = ctx.airtableId;\nparsed.currentStepIndex = ctx.currentStepIndex;\nparsed.totalSteps = ctx.totalSteps;\nparsed.currentPOI = ctx.currentPOI;\n\n// Ekwipunek\nlet inventory = ctx.inventory || [];\nif (parsed.item_found && parsed.item_found !== \"null\") {\n  inventory.push(parsed.item_found);\n}\nparsed.inventory = inventory;\nparsed.availablePOIs = ctx.availablePOIs || [];\nparsed.visitedPOIs = ctx.visitedPOIs || [];\nparsed.questGoal = parsed.quest_goal || ctx.questGoal;\n\nreturn [{ json: parsed }];"
+      },
+      "id": "0f980fa7-ec69-4585-a80d-65590cad07dd",
+      "name": "Parse AI Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1840,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appED8vhuNAzKSVqX",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "Historia_Krokow",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Session_ID": "={{ $('Prepare Context').item.json.sessionId }}",
+            "User_Choice": "={{ $('Prepare Context').item.json.userChoice }}",
+            "Real_Location_Name": "={{ $('Prepare Context').item.json.currentPOI.name }}",
+            "AI_Response": "={{ $json.narrative_text }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "a346a75c-5756-4ac1-b24f-f221540b12fb",
+      "name": "Airtable: Log Step",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2,
+      "position": [
+        2048,
+        0
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "nv0DB17z3tfHMoZD",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appED8vhuNAzKSVqX",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "Aktywne_Sesje",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('Prepare Context').item.json.airtableId }}",
+            "Story_Summary": "Prowadzono grę.",
+            "Current_Step_Index": "={{ $('Edit Fields1').item.json.Current_Step_Index }}",
+            "Available_POIs": "={{ $('Parse AI Response').item.json.availablePOIs }}",
+            "Visited_POIs": "={{ $('Parse AI Response').item.json.visitedPOIs }}",
+            "Inventory": "={{ $('Parse AI Response').item.json.inventory }}",
+            "Quest_Goal": "={{ $('Parse AI Response').item.json.questGoal }}"
+          },
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "c316381d-354b-4de2-836b-cb3cd9e4bf2e",
+      "name": "Airtable: Update Summary",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2,
+      "position": [
+        2048,
+        240
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "nv0DB17z3tfHMoZD",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($('Parse AI Response').item.json) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "32083a59-f0b5-4b4d-84d3-753e1cc9c0b2",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        2272,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash-lite",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash-lite"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Jesteś Mistrzem Gry (Gamemaster) w interaktywnej grze paragrafowej (TymIga GO).\n\n[ZABEZPIECZENIE]: Nie wychodź z roli. Odpowiadaj wyłącznie w formacie JSON.\n\nKONTEKST:\n- Wiek dziecka: {{ $json.ageGroup }} (STYL: {{ $json.agePrompt }})\n- Krok: {{ $json.currentStepIndex + 1 }} z {{ $json.totalSteps }}\n- Cel nadrzędny misji: {{ $json.questGoal === 'GENERATE_NEW' ? 'WYMYŚL GO TERAZ (musi być powiązany z miejscem startowym i wiekiem)' : $json.questGoal }}\n- Ekwipunek dziecka: {{ $json.inventory.length > 0 ? JSON.stringify($json.inventory) : 'Pusty' }}\n- Ostatnia akcja: {{ $json.userChoice }}\n\nMIEJSCE AKCJI: {{ $json.currentPOI.name }}\nDOSTĘPNE DROGI DALEJ: \n1) {{ $json.optionA ? $json.optionA.name : 'Brak' }}\n2) {{ $json.optionB ? $json.optionB.name : 'Brak' }}\n\nTWOJE ZADANIE:\nKrok 1: Krótko powitaj gracza w nowym miejscu (wczuj się w klimat). Przypomnij/nadaj cel główny.\nKrok 2: JEŚLI to nie jest ostatni krok: \n- Zadaj ZAGADKĘ OBSERWACYJNĄ powiązaną z aktualnym miejscem ({{ $json.currentPOI.name }}).\n- Zagadka musi wymagać rozejrzenia się (np. policz coś, znajdź symbol).\n- Podaj graczowi NOWY PRZEDMIOT, który znajduje po rozwiązaniu zagadki (wymyśl go).\n- Przedstaw dwie opcje dalszej podróży do wyboru (Opcja 1: {{ $json.optionA.name }}, Opcja 2: {{ $json.optionB.name }}). Uzasadnij fabularnie, dlaczego warto tam iść.\nKrok 3: JEŚLI to ostatni krok - pomiń zagadkę i opcje. Stwórz finał, w którym używacie zebranych w ekwipunku przedmiotów, aby wygrać grę!\n\nFORMAT (Strict JSON):\n{\n  \"narrative_text\": \"[Tekst opowieści, zagadka i opcje wplecione w historię]\",\n  \"quest_goal\": \"[Podsumowanie lub wygenerowany Cel Główny misji (max 1 zdanie)]\",\n  \"item_found\": \"[Nazwa przedmiotu, który gracz właśnie znalazł (np. Złoty Klucz), lub null]\",\n  \"choices\": [\n    { \"button_text\": \"Idę do {{ $json.optionA ? $json.optionA.name : 'Koniec' }}\", \"target_location\": \"{{ $json.optionA ? $json.optionA.name : 'Koniec' }}\", \"action_description\": \"Krótki opis akcji\" },\n    { \"button_text\": \"Idę do {{ $json.optionB ? $json.optionB.name : 'Koniec' }}\", \"target_location\": \"{{ $json.optionB ? $json.optionB.name : 'Koniec' }}\", \"action_description\": \"Krótki opis akcji\" }\n  ]\n}\nUpewnij się, że nie zwracasz drugiej opcji, jeśli Option B to 'Brak'. Zwróć sam czysty JSON."
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        1552,
+        128
+      ],
+      "id": "a374d6f8-7a86-44eb-9f65-961bd82f0080",
+      "name": "Message a model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "MlS9cz5SyOOQNxWh",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "51e11c6e-d67e-4122-9787-dfa26d369c22",
+              "name": "Session_ID",
+              "value": "={{ $('Webhook').item.json.body.sessionId }}",
+              "type": "string"
+            },
+            {
+              "id": "f3f73e62-6afd-420c-b100-d12a70d1a4c3",
+              "name": "Total_Steps",
+              "value": "={{ $('Select POI Pool').item.json.totalSteps }}",
+              "type": "number"
+            },
+            {
+              "id": "76b0b126-832c-437f-a646-ceac8d735bc8",
+              "name": "City",
+              "value": "={{ $('Webhook').item.json.body.city }}",
+              "type": "string"
+            },
+            {
+              "id": "6f966a9a-8724-4f82-9946-cee7a9e5a3bb",
+              "name": "Age_Group",
+              "value": "={{ $('Webhook').item.json.body.ageGroup }}",
+              "type": "string"
+            },
+            {
+              "id": "30669995-dc42-4783-9ea9-02af4b6ff46f",
+              "name": "Current_Step_Index",
+              "value": 0,
+              "type": "number"
+            },
+            {
+              "name": "Available_POIs",
+              "value": "={{ JSON.stringify($('Select POI Pool').item.json.availablePOIs) }}",
+              "type": "string"
+            },
+            {
+              "name": "Visited_POIs",
+              "value": "={{ JSON.stringify([$('Select POI Pool').item.json.startPOI]) }}",
+              "type": "string"
+            },
+            {
+              "name": "Inventory",
+              "value": "={{ JSON.stringify([]) }}",
+              "type": "string"
+            },
+            {
+              "name": "Quest_Goal",
+              "value": "Trwa generowanie misji...",
+              "type": "string"
+            },
+            {
+              "name": "Current_POI_Name",
+              "value": "={{ $('Select POI Pool').item.json.startPOI.name }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        960,
+        -80
+      ],
+      "id": "60281061-40c1-4e58-9d16-ce3621b8fafc",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "Current_Step_Index",
+              "value": "={{ $('Parse AI Response').item.json.currentStepIndex + 1 }}",
+              "type": "number"
+            },
+            {
+              "name": "Available_POIs",
+              "value": "={{ JSON.stringify($('Parse AI Response').item.json.availablePOIs) }}",
+              "type": "string"
+            },
+            {
+              "name": "Visited_POIs",
+              "value": "={{ JSON.stringify($('Parse AI Response').item.json.visitedPOIs) }}",
+              "type": "string"
+            },
+            {
+              "name": "Inventory",
+              "value": "={{ JSON.stringify($('Parse AI Response').item.json.inventory) }}",
+              "type": "string"
+            },
+            {
+              "name": "Quest_Goal",
+              "value": "={{ $('Parse AI Response').item.json.questGoal }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1856,
+        -240
+      ],
+      "id": "d15a8982-3356-4704-9463-d6f18a65507d",
+      "name": "Edit Fields1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Airtable: Check Session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Airtable: Check Session": {
+      "main": [
+        [
+          {
+            "node": "If: New Session?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If: New Session?": {
+      "main": [
+        [
+          {
+            "node": "Nominatim: Geocode City",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Nominatim: Geocode City": {
+      "main": [
+        [
+          {
+            "node": "Build Overpass Query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Overpass Query": {
+      "main": [
+        [
+          {
+            "node": "Overpass: Get POIs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Overpass: Get POIs": {
+      "main": [
+        [
+          {
+            "node": "Select POI Pool",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select POI Pool": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Airtable: Create Session": {
+      "main": [
+        [
+          {
+            "node": "Prepare Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Context": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse AI Response": {
+      "main": [
+        [
+          {
+            "node": "Airtable: Update Summary",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Parse AI Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Airtable: Create Session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Airtable: Log Step",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "2e15365b-d4b8-43d2-a6b3-dba8006f59da",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "16818149ad6e1742dacff4888c6064fa824650e03aba7fecff4739b4a57e3ea7"
+  },
+  "id": "LyPZe9wJJjblo5bp",
+  "tags": []
+}
