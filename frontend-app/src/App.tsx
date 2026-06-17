@@ -414,7 +414,7 @@ function App() {
   return (
     <div className="min-h-screen lg:h-screen lg:overflow-hidden bg-[#eae3d2] dark:bg-[#121316] text-slate-800 dark:text-slate-200 flex items-center justify-center p-4 lg:p-6 font-sans transition-colors duration-300">
       {/* Outer Tablet Frame */}
-      <div className="w-full max-w-md lg:max-w-[1200px] bg-[#fdfbf7] dark:bg-[#1e2025] rounded-[32px] lg:rounded-[40px] shadow-2xl overflow-hidden relative border-[6px] lg:border-[14px] border-[#1e2024] dark:border-[#0d0e10] transition-all duration-300 flex flex-col min-h-[500px] lg:h-full lg:max-h-[740px]">
+      <div className="w-full max-w-md lg:max-w-[1200px] bg-[#fdfbf7] dark:bg-[#1e2025] rounded-[32px] lg:rounded-[40px] shadow-2xl overflow-hidden relative border-[6px] lg:border-[14px] border-[#1e2024] dark:border-[#0d0e10] transition-all duration-300 flex flex-col min-h-[500px] lg:h-full lg:max-h-[780px]">
         
         {/* Header Bar */}
         <div className="bg-gradient-to-r from-[#0b3861] via-[#0f5379] to-[#0c3157] text-white px-5 py-3 flex flex-col gap-3 lg:gap-0 lg:flex-row lg:items-center lg:justify-between border-b border-[#0b2b48] shadow-md z-10">
@@ -635,12 +635,12 @@ function App() {
                 initial={{ opacity: 0, y: 15 }} 
                 animate={{ opacity: 1, y: 0 }} 
                 exit={{ opacity: 0, y: -15 }}
-                className="flex-1 w-full h-full overflow-y-auto lg:overflow-hidden flex flex-col items-center lg:justify-center p-4 lg:p-6"
+                className="flex-1 w-full h-full overflow-y-auto flex flex-col items-center lg:justify-center p-4 lg:p-5"
               >
-                <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch flex-shrink-0">
+                <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 gap-3 items-stretch flex-shrink-0">
                   
                   {/* Left Column: Visual guide & instructions "Jak grać" */}
-                  <div className="lg:col-span-5 flex flex-col justify-between bg-[#fdfbf7]/40 dark:bg-[#1e2025]/40 rounded-3xl border border-[#eadabe]/60 dark:border-[#3c3424]/60 p-5 shadow-sm relative overflow-hidden backdrop-blur-sm flex-shrink-0">
+                  <div className="lg:col-span-5 flex flex-col justify-start gap-3.5 bg-[#fdfbf7]/40 dark:bg-[#1e2025]/40 rounded-3xl border border-[#eadabe]/60 dark:border-[#3c3424]/60 p-4 shadow-sm relative overflow-hidden backdrop-blur-sm flex-shrink-0">
                     {/* Compass watermark */}
                     <div className="absolute -top-10 -left-10 w-40 h-40 text-[#8b6b4c]/3 dark:text-white/2 pointer-events-none rotate-12">
                       <svg viewBox="0 0 24 24" className="w-full h-full" fill="none" stroke="currentColor" strokeWidth="0.8">
@@ -649,8 +649,8 @@ function App() {
                       </svg>
                     </div>
 
-                    <div className="relative z-10 space-y-5">
-                      <div className="flex flex-col items-center text-center gap-4 py-2">
+                    <div className="relative z-10 space-y-3">
+                      <div className="flex flex-col items-center text-center gap-2 py-1">
                         <div 
                           className="relative flex items-center justify-center"
                           onMouseEnter={() => setLogoHovered(true)}
@@ -663,8 +663,8 @@ function App() {
                                 {[...Array(6)].map((_, i) => {
                                   const angle = (i * 360) / 6;
                                   const rad = (angle * Math.PI) / 180;
-                                  const x = Math.cos(rad) * 75;
-                                  const y = Math.sin(rad) * 75;
+                                  const x = Math.cos(rad) * 60;
+                                  const y = Math.sin(rad) * 60;
                                   return (
                                     <motion.span
                                       key={i}
@@ -672,7 +672,7 @@ function App() {
                                       animate={{ opacity: [0, 1, 1, 0], scale: [0.5, 1.3, 1, 0], x, y }}
                                       exit={{ opacity: 0 }}
                                       transition={{ duration: 0.9, ease: "easeOut", repeat: Infinity, repeatDelay: 0.05, delay: i * 0.06 }}
-                                      className="absolute text-yellow-400 dark:text-yellow-300 text-sm pointer-events-none select-none"
+                                      className="absolute text-yellow-400 dark:text-yellow-300 text-xs pointer-events-none select-none"
                                     >
                                       ✨
                                     </motion.span>
@@ -684,27 +684,27 @@ function App() {
                           <img 
                             src={logo} 
                             alt="PlayTheWay Logo" 
-                            className="h-28 lg:h-36 w-auto drop-shadow-xl hover:scale-105 hover:rotate-[-15deg] transition-transform duration-500 cursor-pointer" 
+                            className="h-16 lg:h-20 w-auto drop-shadow-xl hover:scale-105 hover:rotate-[-15deg] transition-transform duration-500 cursor-pointer" 
                           />
                         </div>
                       </div>
 
-                      <div className="space-y-1">
-                        <h4 className="font-serif font-extrabold text-sm text-slate-700 dark:text-slate-200">
+                      <div className="space-y-0.5">
+                        <h4 className="font-serif font-extrabold text-xs text-slate-700 dark:text-slate-200">
                           📜 Instrukcja Wyprawy
                         </h4>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-                          To interaktywna gra paragrafowa, która zamienia spacer po mieście w prawdziwe poszukiwanie skarbów dla dzieci!
+                        <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                          Interaktywna gra paragrafowa, która zamienia spacer po mieście w poszukiwanie skarbów dla dzieci!
                         </p>
                       </div>
 
                       {/* Stepper info */}
-                      <div className="space-y-3 pt-1">
+                      <div className="space-y-2 pt-0.5">
                         {[
-                          { step: '1', icon: '📍', title: 'Wybierz miasto', text: 'Wpisz nazwę lub kliknij jedno z popularnych miast.' },
-                          { step: '2', icon: '🎒', title: 'Wybierz wiek', text: 'Dopasuj poziom zagadek do swojej drużyny.' },
-                          { step: '3', icon: '🔍', title: 'Rozwiązuj zagadki', text: 'Podążaj za punktami na mapie i zbieraj przedmioty.' },
-                          { step: '4', icon: '📸', title: 'Zrób zdjęcie', text: 'Na koniec zrób zdjęcie w przebraniu i zapisz je na mapie!' }
+                          { step: '1', icon: '📍', title: 'Wybierz miasto', text: 'Wpisz nazwę lub wybierz z listy.' },
+                          { step: '2', icon: '🎒', title: 'Wybierz wiek', text: 'Dopasuj poziom trudności do wieku drużyny.' },
+                          { step: '3', icon: '🔍', title: 'Rozwiązuj zagadki', text: 'Podążaj za punktami i zbieraj przedmioty.' },
+                          { step: '4', icon: '📸', title: 'Zrób zdjęcie', text: 'Zrób pamiątkowe zdjęcie i zdobądź odznakę!' }
                         ].map((s, idx) => (
                           <div key={idx} className="flex gap-3 items-start">
                             <div className="w-5 h-5 rounded-full bg-[#efdfc3] dark:bg-[#2b271d] flex items-center justify-center text-[10px] font-extrabold text-[#8b6b4c] dark:text-[#c4b5a2] flex-shrink-0 mt-0.5">
@@ -722,7 +722,7 @@ function App() {
                     </div>
 
                     {/* Account Indicator CTA */}
-                    <div className="relative z-10 mt-6 pt-4 border-t border-[#eadabe]/60 dark:border-[#3c3424]/60">
+                    <div className="relative z-10 mt-2 pt-2 border-t border-[#eadabe]/60 dark:border-[#3c3424]/60">
                       {user ? (
                         <div className="p-3 rounded-xl bg-green-500/5 dark:bg-green-500/10 border border-green-500/20 text-[10px] text-green-700 dark:text-green-400 flex items-start gap-2.5">
                           <span className="text-xs">🔑</span>
@@ -754,7 +754,7 @@ function App() {
                   </div>
 
                   {/* Right Column: Setting up form */}
-                  <div className="lg:col-span-7 flex flex-col bg-[#fdfbf7] dark:bg-[#1e2025] rounded-3xl border-2 border-[#eadabe] dark:border-[#3c3424] p-5 lg:p-6 shadow-xl relative overflow-hidden justify-between flex-shrink-0 lg:min-h-0">
+                  <div className="lg:col-span-7 flex flex-col bg-[#fdfbf7] dark:bg-[#1e2025] rounded-3xl border-2 border-[#eadabe] dark:border-[#3c3424] p-4 lg:p-5 shadow-xl relative overflow-hidden justify-start gap-3.5 flex-shrink-0 lg:min-h-0">
                     <div className="absolute -bottom-6 -right-6 w-32 h-32 text-[#8b6b4c]/3 pointer-events-none rotate-45">
                       <svg viewBox="0 0 24 24" className="w-full h-full" fill="none" stroke="currentColor" strokeWidth="0.8">
                         <circle cx="12" cy="12" r="10" />
@@ -762,7 +762,7 @@ function App() {
                       </svg>
                     </div>
 
-                    <div className="space-y-5 relative z-10">
+                    <div className="space-y-3 relative z-10">
                       <div>
                         <span className="bg-[#efdfc3] dark:bg-[#2b271d] text-[#8b6b4c] dark:text-[#c4b5a2] text-[9px] font-extrabold px-2 py-0.5 rounded uppercase tracking-wider">
                           Konfiguracja Gry
@@ -815,17 +815,17 @@ function App() {
                         <label className="text-[10px] font-bold text-[#8b6b4c] dark:text-[#c4b5a2] uppercase tracking-wider flex items-center gap-1">
                           🛡️ Krok 2: Klasa Twojej Drużyny (Poziom Trudności)
                         </label>
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-1.5">
                           {[
-                            { id: '5-7', label: '5-7 lat', title: 'Mali Odkrywcy', desc: 'Legendy, proste quizy i ciekawe opowieści 🧭' },
-                            { id: '7-11', label: '7-11 lat', title: 'Poszukiwacze Przygód', desc: 'Fakty historyczne, łamigłówki i poszukiwanie śladów 🔑' },
-                            { id: '11-14', label: '11-14 lat', title: 'Mistrzowie Zagadek', desc: 'Skomplikowane śledztwa, trudne sekrety i rekwizyty 📜' }
+                            { id: '5-7', label: '5-7 lat', title: 'Mali Odkrywcy', desc: 'Legendy, proste quizy i opowieści 🧭' },
+                            { id: '7-11', label: '7-11 lat', title: 'Poszukiwacze Przygód', desc: 'Fakty, łamigłówki i ślady 🔑' },
+                            { id: '11-14', label: '11-14 lat', title: 'Mistrzowie Zagadek', desc: 'Skomplikowane śledztwa i sekrety 📜' }
                           ].map(ag => (
                             <button
                               key={ag.id}
                               type="button"
                               onClick={() => setAgeGroup(ag.id)}
-                              className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between gap-3 ${
+                              className={`p-2 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between gap-2.5 ${
                                 ageGroup === ag.id
                                   ? 'border-[#0f5379] bg-[#efdfc3]/40 dark:bg-[#efdfc3]/10 shadow-sm ring-1 ring-[#0f5379]'
                                   : 'border-[#eadabe] dark:border-[#3c3424] bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 hover:border-[#8b6b4c]'
@@ -847,11 +847,11 @@ function App() {
                     </div>
 
                     {/* Launch Section */}
-                    <div className="space-y-3 pt-4 border-t border-[#eadabe] dark:border-[#3c3424] relative z-10 mt-4">
+                    <div className="space-y-2 pt-3 border-t border-[#eadabe] dark:border-[#3c3424] relative z-10 mt-auto">
                       <button
                         onClick={startAdventure}
                         disabled={!city || !ageGroup}
-                        className="w-full bg-[#0d3b66] hover:bg-[#0f5379] disabled:bg-slate-200 dark:disabled:bg-slate-800 disabled:text-slate-400 disabled:cursor-not-allowed text-white py-3 rounded-xl font-bold text-xs tracking-wider uppercase transition-all shadow-md cursor-pointer flex items-center justify-center gap-2 hover:scale-[1.01]"
+                        className="w-full bg-[#0d3b66] hover:bg-[#0f5379] disabled:bg-slate-200 dark:disabled:bg-slate-800 disabled:text-slate-400 disabled:cursor-not-allowed text-white py-2.5 rounded-xl font-bold text-xs tracking-wider uppercase transition-all shadow-md cursor-pointer flex items-center justify-center gap-2 hover:scale-[1.01]"
                       >
                         🧭 Rozpocznij Misję Odkrywcy
                       </button>
