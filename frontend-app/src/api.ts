@@ -17,6 +17,8 @@ export type AdventureRequest = {
   userChoice?: string;
   latitude?: number;
   longitude?: number;
+  userId?: string;
+  children?: string;
 };
 
 export type AdventureResponse = {

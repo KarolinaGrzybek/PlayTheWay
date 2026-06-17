@@ -17,6 +17,8 @@ export function RouteMapView({ visitedPOIs = [], currentPOI, choices = [], avail
   useEffect(() => {
     if (!mapRef.current) return;
 
+    let active = true;
+
     const L = (window as any).L;
     if (!L) {
       console.warn('Leaflet nie załadowany');
@@ -25,6 +27,7 @@ export function RouteMapView({ visitedPOIs = [], currentPOI, choices = [], avail
 
     // Destroy previous map instance
     if (mapInstanceRef.current) {
+      mapInstanceRef.current.off();
       mapInstanceRef.current.remove();
       mapInstanceRef.current = null;
       markersRef.current = [];
@@ -34,7 +37,7 @@ export function RouteMapView({ visitedPOIs = [], currentPOI, choices = [], avail
     const firstValidPOI = [currentPOI, ...(visitedPOIs || []), ...(availablePOIs || [])].find(p => p && p.lat && p.lon);
 
     const initMap = (lat: number, lon: number) => {
-      if (!mapRef.current) return;
+      if (!active || !mapRef.current) return;
 
       const map = L.map(mapRef.current, {
         center: [lat, lon],
@@ -108,7 +111,7 @@ export function RouteMapView({ visitedPOIs = [], currentPOI, choices = [], avail
 
       // Set view to current POI if has coords
       if (currentPOI && currentPOI.lat && currentPOI.lon) {
-        map.setView([currentPOI.lat, currentPOI.lon], 15, { animate: true });
+        map.setView([currentPOI.lat, currentPOI.lon], 15, { animate: false });
       }
 
       // Fit bounds to all coords
@@ -118,7 +121,7 @@ export function RouteMapView({ visitedPOIs = [], currentPOI, choices = [], avail
 
       if (allCoords.length > 1) {
         const bounds = L.latLngBounds(allCoords as [number, number][]);
-        map.fitBounds(bounds, { padding: [40, 40] });
+        map.fitBounds(bounds, { padding: [40, 40], animate: false });
       }
     };
 
@@ -126,25 +129,31 @@ export function RouteMapView({ visitedPOIs = [], currentPOI, choices = [], avail
       // Use existing coords
       initMap(firstValidPOI.lat, firstValidPOI.lon);
     } else if (city) {
-      // Geocode city name using Nominatim
-      fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city)}&format=json&limit=1`, {
+      // Geocode city name using Nominatim restricted/prioritized to Europe
+      fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city)}&format=json&limit=1&viewbox=-25,72,45,34`, {
         headers: { 'User-Agent': 'PlayTheWay/1.0 (student project)' }
       })
         .then(r => r.json())
         .then(data => {
+          if (!active) return;
           if (data && data.length > 0) {
             initMap(parseFloat(data[0].lat), parseFloat(data[0].lon));
           } else {
             initMap(52.2297, 21.0122); // Warsaw fallback
           }
         })
-        .catch(() => initMap(52.2297, 21.0122));
+        .catch(() => {
+          if (!active) return;
+          initMap(52.2297, 21.0122);
+        });
     } else {
       initMap(52.2297, 21.0122); // Warsaw fallback
     }
 
     return () => {
+      active = false;
       if (mapInstanceRef.current) {
+        mapInstanceRef.current.off();
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
       }
