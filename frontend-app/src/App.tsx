@@ -635,12 +635,12 @@ function App() {
                 initial={{ opacity: 0, y: 15 }} 
                 animate={{ opacity: 1, y: 0 }} 
                 exit={{ opacity: 0, y: -15 }}
-                className="flex-1 w-full h-full overflow-y-auto flex flex-col items-center lg:justify-center p-4 lg:p-5"
+                className="flex-1 w-full h-full overflow-y-auto flex flex-col items-center lg:justify-center p-2 lg:py-2.5 lg:px-4"
               >
-                <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 gap-3 items-stretch flex-shrink-0">
+                <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 gap-2.5 items-stretch flex-shrink-0">
                   
                   {/* Left Column: Visual guide & instructions "Jak grać" */}
-                  <div className="lg:col-span-5 flex flex-col justify-start gap-3.5 bg-[#fdfbf7]/40 dark:bg-[#1e2025]/40 rounded-3xl border border-[#eadabe]/60 dark:border-[#3c3424]/60 p-4 shadow-sm relative overflow-hidden backdrop-blur-sm flex-shrink-0">
+                  <div className="lg:col-span-5 flex flex-col justify-start gap-2.5 bg-[#fdfbf7]/40 dark:bg-[#1e2025]/40 rounded-3xl border border-[#eadabe]/60 dark:border-[#3c3424]/60 p-3.5 shadow-sm relative overflow-hidden backdrop-blur-sm flex-shrink-0">
                     {/* Compass watermark */}
                     <div className="absolute -top-10 -left-10 w-40 h-40 text-[#8b6b4c]/3 dark:text-white/2 pointer-events-none rotate-12">
                       <svg viewBox="0 0 24 24" className="w-full h-full" fill="none" stroke="currentColor" strokeWidth="0.8">
@@ -649,8 +649,8 @@ function App() {
                       </svg>
                     </div>
 
-                    <div className="relative z-10 space-y-3">
-                      <div className="flex flex-col items-center text-center gap-2 py-1">
+                    <div className="relative z-10 space-y-2">
+                      <div className="flex flex-col items-center text-center gap-1 py-0.5">
                         <div 
                           className="relative flex items-center justify-center"
                           onMouseEnter={() => setLogoHovered(true)}
@@ -663,8 +663,8 @@ function App() {
                                 {[...Array(6)].map((_, i) => {
                                   const angle = (i * 360) / 6;
                                   const rad = (angle * Math.PI) / 180;
-                                  const x = Math.cos(rad) * 60;
-                                  const y = Math.sin(rad) * 60;
+                                  const x = Math.cos(rad) * 45;
+                                  const y = Math.sin(rad) * 45;
                                   return (
                                     <motion.span
                                       key={i}
@@ -672,7 +672,7 @@ function App() {
                                       animate={{ opacity: [0, 1, 1, 0], scale: [0.5, 1.3, 1, 0], x, y }}
                                       exit={{ opacity: 0 }}
                                       transition={{ duration: 0.9, ease: "easeOut", repeat: Infinity, repeatDelay: 0.05, delay: i * 0.06 }}
-                                      className="absolute text-yellow-400 dark:text-yellow-300 text-xs pointer-events-none select-none"
+                                      className="absolute text-yellow-400 dark:text-yellow-300 text-[10px] pointer-events-none select-none"
                                     >
                                       ✨
                                     </motion.span>
@@ -684,37 +684,37 @@ function App() {
                           <img 
                             src={logo} 
                             alt="PlayTheWay Logo" 
-                            className="h-16 lg:h-20 w-auto drop-shadow-xl hover:scale-105 hover:rotate-[-15deg] transition-transform duration-500 cursor-pointer" 
+                            className="h-12 lg:h-16 w-auto drop-shadow-xl hover:scale-105 hover:rotate-[-15deg] transition-transform duration-500 cursor-pointer" 
                           />
                         </div>
                       </div>
 
                       <div className="space-y-0.5">
-                        <h4 className="font-serif font-extrabold text-xs text-slate-700 dark:text-slate-200">
+                        <h4 className="font-serif font-extrabold text-[11px] text-slate-700 dark:text-slate-200">
                           📜 Instrukcja Wyprawy
                         </h4>
-                        <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed">
-                          Interaktywna gra paragrafowa, która zamienia spacer po mieście w poszukiwanie skarbów dla dzieci!
+                        <p className="text-[9px] text-slate-500 dark:text-slate-400 leading-normal">
+                          Interaktywna gra paragrafowa zamieniająca spacer w poszukiwanie skarbów!
                         </p>
                       </div>
 
                       {/* Stepper info */}
-                      <div className="space-y-2 pt-0.5">
+                      <div className="space-y-1.5 pt-0">
                         {[
-                          { step: '1', icon: '📍', title: 'Wybierz miasto', text: 'Wpisz nazwę lub wybierz z listy.' },
-                          { step: '2', icon: '🎒', title: 'Wybierz wiek', text: 'Dopasuj poziom trudności do wieku drużyny.' },
-                          { step: '3', icon: '🔍', title: 'Rozwiązuj zagadki', text: 'Podążaj za punktami i zbieraj przedmioty.' },
-                          { step: '4', icon: '📸', title: 'Zrób zdjęcie', text: 'Zrób pamiątkowe zdjęcie i zdobądź odznakę!' }
+                          { step: '1', icon: '📍', title: 'Wybierz miasto', text: 'Wpisz nazwę miasta lub wybierz z listy.' },
+                          { step: '2', icon: '🎒', title: 'Wybierz wiek', text: 'Dopasuj zagadki do wieku dzieci.' },
+                          { step: '3', icon: '🔍', title: 'Rozwiązuj zagadki', text: 'Ruszaj na trasę i zbieraj przedmioty.' },
+                          { step: '4', icon: '📸', title: 'Zrób zdjęcie', text: 'Zrób zdjęcie i zdobądź odznakę.' }
                         ].map((s, idx) => (
-                          <div key={idx} className="flex gap-3 items-start">
-                            <div className="w-5 h-5 rounded-full bg-[#efdfc3] dark:bg-[#2b271d] flex items-center justify-center text-[10px] font-extrabold text-[#8b6b4c] dark:text-[#c4b5a2] flex-shrink-0 mt-0.5">
+                          <div key={idx} className="flex gap-2 items-start">
+                            <div className="w-4 h-4 rounded-full bg-[#efdfc3] dark:bg-[#2b271d] flex items-center justify-center text-[9px] font-extrabold text-[#8b6b4c] dark:text-[#c4b5a2] flex-shrink-0 mt-0.5">
                               {s.step}
                             </div>
                             <div>
-                              <div className="text-xs font-bold text-slate-700 dark:text-slate-200 leading-tight">
+                              <div className="text-[11px] font-bold text-slate-700 dark:text-slate-200 leading-tight">
                                 {s.icon} {s.title}
                               </div>
-                              <div className="text-[10px] text-slate-400 leading-snug mt-0.5">{s.text}</div>
+                              <div className="text-[9px] text-slate-400 leading-none mt-0.5">{s.text}</div>
                             </div>
                           </div>
                         ))}
@@ -722,14 +722,14 @@ function App() {
                     </div>
 
                     {/* Account Indicator CTA */}
-                    <div className="relative z-10 mt-2 pt-2 border-t border-[#eadabe]/60 dark:border-[#3c3424]/60">
+                    <div className="relative z-10 mt-auto pt-1.5 border-t border-[#eadabe]/60 dark:border-[#3c3424]/60">
                       {user ? (
-                        <div className="p-3 rounded-xl bg-green-500/5 dark:bg-green-500/10 border border-green-500/20 text-[10px] text-green-700 dark:text-green-400 flex items-start gap-2.5">
+                        <div className="p-2 rounded-xl bg-green-500/5 dark:bg-green-500/10 border border-green-500/20 text-[9px] text-green-700 dark:text-green-400 flex items-start gap-2">
                           <span className="text-xs">🔑</span>
                           <div>
-                            <p className="font-extrabold uppercase tracking-wide text-[9px] leading-tight">Karta Odkrywcy Aktywna</p>
+                            <p className="font-extrabold uppercase tracking-wide text-[8px] leading-tight">Karta Odkrywcy Aktywna</p>
                             <p className="mt-0.5 leading-snug">
-                              Zbierasz punkty i odznaki dla:{' '}
+                              Zbierasz nagrody dla:{' '}
                               <span className="font-bold underline">
                                 {user.user_metadata?.children?.join(', ') || 'Twojej drużyny'}
                               </span>
@@ -737,14 +737,14 @@ function App() {
                           </div>
                         </div>
                       ) : (
-                        <div className="p-3 rounded-xl bg-[#0d3b66]/5 dark:bg-[#f4d35e]/5 border border-[#0d3b66]/10 dark:border-[#f4d35e]/15 text-[10px] text-slate-500 dark:text-slate-400 flex items-start justify-between gap-2">
+                        <div className="p-2 rounded-xl bg-[#0d3b66]/5 dark:bg-[#f4d35e]/5 border border-[#0d3b66]/10 dark:border-[#f4d35e]/15 text-[9px] text-slate-500 dark:text-slate-400 flex items-start justify-between gap-2">
                           <div className="space-y-0.5">
-                            <p className="font-bold text-[#0d3b66] dark:text-[#f4d35e]">Graj z kontem Odkrywcy!</p>
-                            <p className="leading-snug text-slate-400">Zapisuj pamiątkowe zdjęcia na mapie Polski i zbieraj odznaki.</p>
+                            <p className="font-bold text-[#0d3b66] dark:text-[#f4d35e] text-[10px]">Graj z kontem Odkrywcy!</p>
+                            <p className="leading-snug text-slate-400 text-[8px]">Zapisuj zdjęcia na mapie i zbieraj odznaki.</p>
                           </div>
                           <button
                             onClick={() => { setAuthMode('login'); setAuthError(null); setShowAuthModal(true); }}
-                            className="px-2.5 py-1.5 bg-[#0d3b66] hover:bg-[#0f5379] text-white text-[9px] font-bold rounded-lg transition-colors flex-shrink-0 cursor-pointer"
+                            className="px-2 py-1 bg-[#0d3b66] hover:bg-[#0f5379] text-white text-[8px] font-bold rounded-lg transition-colors flex-shrink-0 cursor-pointer"
                           >
                             Zaloguj się
                           </button>
@@ -754,7 +754,7 @@ function App() {
                   </div>
 
                   {/* Right Column: Setting up form */}
-                  <div className="lg:col-span-7 flex flex-col bg-[#fdfbf7] dark:bg-[#1e2025] rounded-3xl border-2 border-[#eadabe] dark:border-[#3c3424] p-4 lg:p-5 shadow-xl relative overflow-hidden justify-start gap-3.5 flex-shrink-0 lg:min-h-0">
+                  <div className="lg:col-span-7 flex flex-col bg-[#fdfbf7] dark:bg-[#1e2025] rounded-3xl border-2 border-[#eadabe] dark:border-[#3c3424] p-3.5 lg:p-4 shadow-xl relative overflow-hidden justify-start gap-3 flex-shrink-0 lg:min-h-0">
                     <div className="absolute -bottom-6 -right-6 w-32 h-32 text-[#8b6b4c]/3 pointer-events-none rotate-45">
                       <svg viewBox="0 0 24 24" className="w-full h-full" fill="none" stroke="currentColor" strokeWidth="0.8">
                         <circle cx="12" cy="12" r="10" />
@@ -838,7 +838,7 @@ function App() {
                                   </span>
                                   {ag.title}
                                 </div>
-                                <div className="text-[9px] text-slate-400 mt-0.5 leading-tight">{ag.desc}</div>
+                                <div className="text-[8px] text-slate-400 mt-0.5 leading-tight">{ag.desc}</div>
                               </div>
                             </button>
                           ))}
@@ -847,11 +847,11 @@ function App() {
                     </div>
 
                     {/* Launch Section */}
-                    <div className="space-y-2 pt-3 border-t border-[#eadabe] dark:border-[#3c3424] relative z-10 mt-auto">
+                    <div className="space-y-1.5 pt-2 border-t border-[#eadabe] dark:border-[#3c3424] relative z-10 mt-auto">
                       <button
                         onClick={startAdventure}
                         disabled={!city || !ageGroup}
-                        className="w-full bg-[#0d3b66] hover:bg-[#0f5379] disabled:bg-slate-200 dark:disabled:bg-slate-800 disabled:text-slate-400 disabled:cursor-not-allowed text-white py-2.5 rounded-xl font-bold text-xs tracking-wider uppercase transition-all shadow-md cursor-pointer flex items-center justify-center gap-2 hover:scale-[1.01]"
+                        className="w-full bg-[#0d3b66] hover:bg-[#0f5379] disabled:bg-slate-200 dark:disabled:bg-slate-800 disabled:text-slate-400 disabled:cursor-not-allowed text-white py-2 rounded-xl font-bold text-xs tracking-wider uppercase transition-all shadow-md cursor-pointer flex items-center justify-center gap-2 hover:scale-[1.01]"
                       >
                         🧭 Rozpocznij Misję Odkrywcy
                       </button>
