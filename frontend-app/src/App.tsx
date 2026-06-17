@@ -9,7 +9,6 @@ import { ChronicleView } from './ChronicleView';
 import { BadgesView } from './BadgesView';
 import { supabase } from './supabaseClient';
 import logo from './assets/logo.png';
-import logoHorizontal from './assets/logo_poziome.png';
 
 type Step = 'onboarding' | 'loading' | 'route' | 'story';
 interface StoryData extends AdventureResponse {}
