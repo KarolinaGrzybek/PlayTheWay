@@ -13,6 +13,7 @@ interface CompletedAdventure {
 
 interface ChronicleViewProps {
   userId: string;
+  leafletLoaded?: boolean;
 }
 
 function getCountryColor(name: string) {
@@ -29,7 +30,7 @@ function getCountryColor(name: string) {
   return colors[idx];
 }
 
-export function ChronicleView({ userId }: ChronicleViewProps) {
+export function ChronicleView({ userId, leafletLoaded }: ChronicleViewProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const [adventures, setAdventures] = useState<CompletedAdventure[]>([]);
@@ -199,7 +200,7 @@ export function ChronicleView({ userId }: ChronicleViewProps) {
         mapInstanceRef.current = null;
       }
     };
-  }, [loading, adventures]);
+  }, [loading, adventures, leafletLoaded]);
 
   if (loading) {
     return (
@@ -230,14 +231,14 @@ export function ChronicleView({ userId }: ChronicleViewProps) {
           Twoja Kronika jest jeszcze pusta
         </h3>
         <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-          Wyrusz w swoją pierwszą podróż, dotrzyj do mety i zrób pamiątkowe zdjęcie odkrywcy, aby przypiąć pierwszą pinezkę na mapie Polski!
+          Wyrusz w swoją pierwszą podróż, dotrzyj to mety i zrób pamiątkowe zdjęcie odkrywcy, aby przypiąć pierwszą pinezkę na mapie Polski!
         </p>
       </div>
     );
   }
 
   return (
-    <div className="flex-1 flex flex-col p-6 h-full overflow-hidden">
+    <div className="flex-1 flex flex-col p-4 sm:p-6 w-full overflow-hidden">
       <div className="mb-4">
         <span className="inline-flex items-center gap-1 bg-[#efdfc3] dark:bg-[#2b271d] text-[#8b6b4c] dark:text-[#c4b5a2] text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wider mb-2">
           🗺️ Twoja Kronika Odkryć
@@ -250,7 +251,7 @@ export function ChronicleView({ userId }: ChronicleViewProps) {
         </p>
       </div>
 
-      <div className="flex-1 rounded-2xl overflow-hidden border border-[#eadabe] dark:border-[#3c3424] shadow-inner relative min-h-[300px]">
+      <div className="w-full h-[320px] sm:h-[400px] lg:flex-1 rounded-2xl overflow-hidden border border-[#eadabe] dark:border-[#3c3424] shadow-inner relative">
         <div ref={mapRef} className="w-full h-full" />
       </div>
     </div>
