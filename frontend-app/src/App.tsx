@@ -965,7 +965,7 @@ function App() {
 
                 {/* COLUMN 2: Interaction (Quiz OR Choices) */}
                 {/* Visible on Desktop, or on Mobile only if step === 'story' */}
-                <div className={`flex-col p-6 bg-[#faf6ee] dark:bg-[#1a1b20] h-full overflow-y-auto scrollbar-hide transition-all ${
+                <div className={`flex-col py-4 px-5 bg-[#faf6ee] dark:bg-[#1a1b20] h-full overflow-y-auto scrollbar-hide transition-all ${
                   step === 'story' ? 'flex' : 'hidden lg:flex'
                 }`}>
                   
@@ -973,14 +973,14 @@ function App() {
                   {story.quiz && !quizSolved ? (
                     <div className="flex flex-col h-full justify-between">
                       <div>
-                        <span className="inline-flex items-center gap-1 bg-amber-500/10 text-amber-600 dark:text-amber-400 text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wider mb-2">
+                        <span className="inline-flex items-center gap-1 bg-amber-500/10 text-amber-600 dark:text-amber-400 text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wider mb-1.5">
                           Zagadka lokacji
                         </span>
-                        <h3 className="text-base lg:text-lg font-serif font-bold text-slate-800 dark:text-slate-100 leading-snug mb-4">
+                        <h3 className="text-sm lg:text-base font-serif font-bold text-slate-800 dark:text-slate-100 leading-snug mb-3">
                           {story.quiz.question}
                         </h3>
                         
-                        <div className="space-y-2.5">
+                        <div className="space-y-2">
                           {story.quiz.options.map((option, idx) => {
                             const isSelected = selectedQuizOption === idx;
                             const isCorrect = idx === story.quiz?.correct_index;
@@ -1014,10 +1014,10 @@ function App() {
                                     setQuizFeedback('wrong');
                                   }
                                 }}
-                                className={`w-full p-3.5 rounded-xl border text-left transition-all hover:shadow-sm flex items-center justify-between gap-3 text-xs font-semibold cursor-pointer ${btnStyle}`}
+                                className={`w-full py-2 px-3 lg:py-2.5 lg:px-3.5 rounded-xl border text-left transition-all hover:shadow-sm flex items-center justify-between gap-3 text-xs font-semibold cursor-pointer ${btnStyle}`}
                               >
                                 <span className="flex-1 pr-1 leading-snug">{option}</span>
-                                <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-all ${badgeStyle}`}>
+                                <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 transition-all ${badgeStyle}`}>
                                   {getOptionIcon(option)}
                                 </div>
                               </button>
@@ -1027,7 +1027,7 @@ function App() {
                       </div>
 
                       {/* Quiz Feedback message / solve button */}
-                      <div className="mt-4 pt-4 border-t border-[#eadabe] dark:border-[#3c3424]">
+                      <div className="mt-3 pt-3 border-t border-[#eadabe] dark:border-[#3c3424]">
                         {quizFeedback === 'correct' && (
                           <div className="space-y-3">
                             <p className="text-xs text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1.5 animate-pulse">
@@ -1035,7 +1035,7 @@ function App() {
                             </p>
                             <button
                               onClick={() => setQuizSolved(true)}
-                              className="w-full py-3 bg-[#0d3b66] hover:bg-[#0f5379] text-white text-xs font-bold rounded-xl transition-colors cursor-pointer"
+                              className="w-full py-2.5 bg-[#0d3b66] hover:bg-[#0f5379] text-white text-xs font-bold rounded-xl transition-colors cursor-pointer"
                             >
                               Pokaż opcje podróży
                             </button>
@@ -1051,7 +1051,7 @@ function App() {
                                 setSelectedQuizOption(null);
                                 setQuizFeedback(null);
                               }}
-                              className="w-full py-2.5 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 text-slate-800 dark:text-slate-200 text-xs font-bold rounded-xl transition-colors cursor-pointer"
+                              className="w-full py-2 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 text-slate-800 dark:text-slate-200 text-xs font-bold rounded-xl transition-colors cursor-pointer"
                             >
                               Spróbuj jeszcze raz
                             </button>
@@ -1063,17 +1063,17 @@ function App() {
                     /* Choices View (Normal Choices or Grand Finale) */
                     <div className="flex flex-col h-full justify-between">
                       <div>
-                        <span className="inline-flex items-center gap-1 bg-[#efdfc3] dark:bg-[#2b271d] text-[#8b6b4c] dark:text-[#c4b5a2] text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wider mb-2">
+                        <span className="inline-flex items-center gap-1 bg-[#efdfc3] dark:bg-[#2b271d] text-[#8b6b4c] dark:text-[#c4b5a2] text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wider mb-1.5">
                           Następny Krok
                         </span>
                         
                         {quizSolved && (
-                          <div className="p-3 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/50 rounded-xl mb-4 text-[11px] text-emerald-800 dark:text-emerald-300 font-semibold">
+                          <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/50 rounded-xl mb-3 text-[11px] text-emerald-800 dark:text-emerald-300 font-semibold">
                             ✅ Zagadka rozwiązana! Wybierzcie kolejny cel podróży.
                           </div>
                         )}
 
-                        <div className="space-y-2.5">
+                        <div className="space-y-2">
                           {isGameFinished ? (
                             photoSavedUrl ? (
                               <div className="p-5 bg-gradient-to-br from-yellow-500 to-amber-600 text-white rounded-xl shadow-md text-center animate-in face-in zoom-in">
@@ -1122,7 +1122,7 @@ function App() {
                                 <button
                                   key={idx}
                                   onClick={() => makeChoice(idx)}
-                                  className="w-full bg-white dark:bg-slate-900 border border-[#eadabe] dark:border-[#3c3424] hover:border-[#0d3b66] dark:hover:border-[#f4d35e] p-3.5 rounded-xl text-left transition-all hover:shadow-sm flex items-center justify-between gap-3 cursor-pointer group"
+                                  className="w-full bg-white dark:bg-slate-900 border border-[#eadabe] dark:border-[#3c3424] hover:border-[#0d3b66] dark:hover:border-[#f4d35e] py-2.5 px-3.5 rounded-xl text-left transition-all hover:shadow-sm flex items-center justify-between gap-3 cursor-pointer group"
                                 >
                                   <div>
                                     <h4 className="font-bold text-slate-800 dark:text-slate-100 text-xs leading-snug group-hover:text-[#0f5379] dark:group-hover:text-[#f4d35e] transition-colors">
