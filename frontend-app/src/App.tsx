@@ -411,6 +411,43 @@ function App() {
   const currentInventory = story?.inventory ?? [];
   const isGameFinished = currentStepIndex >= totalSteps || (currentStepIndex === totalSteps - 1 && quizSolved);
 
+  const renderMenuActions = (isMobile: boolean) => (
+    <div className={`flex items-center gap-1.5 ${isMobile ? 'lg:hidden' : 'hidden lg:flex'}`}>
+      <button onClick={resetGame} className="p-2 bg-white/10 hover:bg-white/20 active:bg-white/30 rounded-lg transition-colors cursor-pointer" title="Resetuj przygodę">
+        <Home className="w-4 h-4 text-white" />
+      </button>
+      
+      {currentTab === 'adventure' && (step === 'story' || step === 'route') && currentInventory.length > 0 && (
+        <button onClick={() => setShowInventory(!showInventory)} className="p-2 bg-white/10 hover:bg-white/20 active:bg-white/30 rounded-lg transition-colors relative cursor-pointer" title="Ekwipunek">
+          <Package className="w-4 h-4 text-white" />
+          <span className="absolute -top-1 -right-1 bg-yellow-500 text-slate-900 text-[9px] font-extrabold rounded-full w-4 h-4 flex items-center justify-center border border-white">
+            {currentInventory.length}
+          </span>
+        </button>
+      )}
+
+      {currentTab === 'adventure' && (step === 'story' || step === 'route') && (
+        <button onClick={() => setStep(step === 'route' ? 'story' : 'route')} className="p-2 bg-white/10 hover:bg-white/20 active:bg-white/30 rounded-lg transition-colors lg:hidden cursor-pointer" title="Przełącz Mapa/Przygoda">
+          {step === 'route' ? <Sparkles className="w-4 h-4 text-white" /> : <Map className="w-4 h-4 text-white" />}
+        </button>
+      )}
+
+      <button onClick={() => setIsDarkMode(!isDarkMode)} className="p-2 bg-white/10 hover:bg-white/20 active:bg-white/30 rounded-lg transition-colors cursor-pointer" title="Motyw">
+        {isDarkMode ? <Sun className="w-4 h-4 text-white" /> : <Moon className="w-4 h-4 text-white" />}
+      </button>
+
+      {user ? (
+        <button onClick={handleLogout} className="p-2 bg-white/10 hover:bg-red-500/20 active:bg-red-500/30 rounded-lg transition-colors cursor-pointer" title="Wyloguj się">
+          <LogOut className="w-4 h-4 text-white" />
+        </button>
+      ) : (
+        <button onClick={() => { setAuthMode('login'); setAuthError(null); setShowAuthModal(true); }} className="p-2 bg-white/10 hover:bg-yellow-400/20 active:bg-yellow-400/30 rounded-lg transition-colors cursor-pointer" title="Zaloguj się">
+          <User className="w-4 h-4 text-white" />
+        </button>
+      )}
+    </div>
+  );
+
   return (
     <div className="min-h-screen lg:h-screen lg:overflow-hidden bg-[#eae3d2] dark:bg-[#121316] text-slate-800 dark:text-slate-200 flex items-center justify-center p-4 lg:p-6 font-sans transition-colors duration-300">
       {/* Outer Tablet Frame */}
@@ -419,43 +456,48 @@ function App() {
         {/* Header Bar */}
         <div className="bg-gradient-to-r from-[#0b3861] via-[#0f5379] to-[#0c3157] text-white px-5 py-3 flex flex-col gap-3 lg:gap-0 lg:flex-row lg:items-center lg:justify-between border-b border-[#0b2b48] shadow-md z-10">
           
-          {/* Left: Player Profile & Level */}
-          <div className="flex items-center gap-3">
-            <button 
-              onClick={() => setShowAvatarModal(true)}
-              className="relative group focus:outline-none cursor-pointer"
-              title="Wybierz awatar"
-            >
-              <div className="w-10 h-10 rounded-full border-2 border-yellow-400 bg-white/10 hover:bg-white/20 active:scale-95 transition-all flex items-center justify-center text-2xl shadow-inner select-none">
-                {currentAvatar}
-              </div>
-              <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-yellow-500 rounded-full border border-white text-[10px] font-extrabold text-slate-900 flex items-center justify-center group-hover:scale-110 transition-transform">
-                {userLevel}
-              </div>
-            </button>
-            <div>
-              <div className="text-[10px] text-white/70 uppercase font-bold tracking-wider leading-none">Ranga</div>
-              <div className="text-xs font-extrabold text-yellow-400 leading-normal">{userRank}</div>
-              {user && (
-                <div className="text-[8px] text-white/50 truncate max-w-[100px] leading-none" title={user.email}>
-                  {user.email.split('@')[0]}
+          {/* Top Row on Mobile: Player Profile (Left) and Actions (Right) */}
+          <div className="flex items-center justify-between w-full lg:w-auto gap-3">
+            {/* Left: Player Profile & Level */}
+            <div className="flex items-center gap-3">
+              <button 
+                onClick={() => setShowAvatarModal(true)}
+                className="relative group focus:outline-none cursor-pointer"
+                title="Wybierz awatar"
+              >
+                <div className="w-10 h-10 rounded-full border-2 border-yellow-400 bg-white/10 hover:bg-white/20 active:scale-95 transition-all flex items-center justify-center text-2xl shadow-inner select-none">
+                  {currentAvatar}
                 </div>
-              )}
-            </div>
-            <div className="ml-3 hidden sm:block">
-              <div className="text-[9px] text-white/50 leading-none mb-1">Postęp poziomu ({completedCount % 3}/3 wypraw)</div>
-              <div className="w-24 h-1.5 bg-white/20 rounded-full overflow-hidden">
-                <div className="h-full bg-yellow-400 rounded-full transition-all duration-500" style={{ width: `${nextLevelProgress}%` }} />
+                <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-yellow-500 rounded-full border border-white text-[10px] font-extrabold text-slate-900 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  {userLevel}
+                </div>
+              </button>
+              <div>
+                <div className="text-[10px] text-white/70 uppercase font-bold tracking-wider leading-none">Ranga</div>
+                <div className="text-xs font-extrabold text-yellow-400 leading-normal">{userRank}</div>
+                {user && (
+                  <div className="text-[8px] text-white/50 truncate max-w-[100px] leading-none" title={user.email}>
+                    {user.email.split('@')[0]}
+                  </div>
+                )}
+              </div>
+              <div className="ml-3 hidden sm:block">
+                <div className="text-[9px] text-white/50 leading-none mb-1">Postęp poziomu ({completedCount % 3}/3 wypraw)</div>
+                <div className="w-24 h-1.5 bg-white/20 rounded-full overflow-hidden">
+                  <div className="h-full bg-yellow-400 rounded-full transition-all duration-500" style={{ width: `${nextLevelProgress}%` }} />
+                </div>
               </div>
             </div>
+
+            {/* Mobile Actions (Visible on mobile, hidden on desktop) */}
+            {renderMenuActions(true)}
           </div>
 
-
-          {/* Right: Steps Tracker & Actions */}
-          <div className="flex items-center justify-between lg:justify-end gap-4">
+          {/* Bottom Row on Mobile: Steps Tracker (Centered), Actions on Desktop */}
+          <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-end gap-3 lg:gap-4 w-full lg:w-auto">
             {/* Steps Progress Icons */}
             {currentTab === 'adventure' && (step === 'story' || step === 'route') && totalSteps > 0 && (
-              <div className="flex items-center gap-1.5 relative px-2.5 py-1 bg-black/15 rounded-full border border-white/5">
+              <div className="flex items-center gap-1 sm:gap-1.5 relative px-2 py-0.5 sm:px-2.5 sm:py-1 bg-black/15 rounded-full border border-white/5">
                 {/* Connecting background line */}
                 <div className="absolute left-4 right-4 top-1/2 -translate-y-1/2 h-[2px] bg-white/10 z-0" />
                 {/* Connecting active line */}
@@ -473,7 +515,7 @@ function App() {
                     <div 
                       key={idx} 
                       title={`Miejsce ${idx + 1}`}
-                      className={`w-6 h-6 rounded-full flex items-center justify-center z-10 transition-all duration-300 text-[10px] font-extrabold ${
+                      className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center z-10 transition-all duration-300 text-[9px] sm:text-[10px] font-extrabold ${
                         isVisited 
                           ? 'bg-yellow-400 text-[#0b3861] scale-105 shadow shadow-yellow-400/20' 
                           : isCurrent 
@@ -488,41 +530,8 @@ function App() {
               </div>
             )}
 
-            {/* Menu Actions */}
-            <div className="flex items-center gap-1.5">
-              <button onClick={resetGame} className="p-2 bg-white/10 hover:bg-white/20 active:bg-white/30 rounded-lg transition-colors cursor-pointer" title="Resetuj przygodę">
-                <Home className="w-4 h-4 text-white" />
-              </button>
-              
-              {currentTab === 'adventure' && (step === 'story' || step === 'route') && currentInventory.length > 0 && (
-                <button onClick={() => setShowInventory(!showInventory)} className="p-2 bg-white/10 hover:bg-white/20 active:bg-white/30 rounded-lg transition-colors relative cursor-pointer" title="Ekwipunek">
-                  <Package className="w-4 h-4 text-white" />
-                  <span className="absolute -top-1 -right-1 bg-yellow-500 text-slate-900 text-[9px] font-extrabold rounded-full w-4 h-4 flex items-center justify-center border border-white">
-                    {currentInventory.length}
-                  </span>
-                </button>
-              )}
-
-              {currentTab === 'adventure' && (step === 'story' || step === 'route') && (
-                <button onClick={() => setStep(step === 'route' ? 'story' : 'route')} className="p-2 bg-white/10 hover:bg-white/20 active:bg-white/30 rounded-lg transition-colors lg:hidden cursor-pointer" title="Przełącz Mapa/Przygoda">
-                  {step === 'route' ? <Sparkles className="w-4 h-4 text-white" /> : <Map className="w-4 h-4 text-white" />}
-                </button>
-              )}
-
-              <button onClick={() => setIsDarkMode(!isDarkMode)} className="p-2 bg-white/10 hover:bg-white/20 active:bg-white/30 rounded-lg transition-colors cursor-pointer" title="Motyw">
-                {isDarkMode ? <Sun className="w-4 h-4 text-white" /> : <Moon className="w-4 h-4 text-white" />}
-              </button>
-
-              {user ? (
-                <button onClick={handleLogout} className="p-2 bg-white/10 hover:bg-red-500/20 active:bg-red-500/30 rounded-lg transition-colors cursor-pointer" title="Wyloguj się">
-                  <LogOut className="w-4 h-4 text-white" />
-                </button>
-              ) : (
-                <button onClick={() => { setAuthMode('login'); setAuthError(null); setShowAuthModal(true); }} className="p-2 bg-white/10 hover:bg-yellow-400/20 active:bg-yellow-400/30 rounded-lg transition-colors cursor-pointer" title="Zaloguj się">
-                  <User className="w-4 h-4 text-white" />
-                </button>
-              )}
-            </div>
+            {/* Desktop Actions (Hidden on mobile, visible on desktop) */}
+            {renderMenuActions(false)}
           </div>
         </div>
 
