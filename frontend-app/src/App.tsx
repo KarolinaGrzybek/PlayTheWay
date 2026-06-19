@@ -129,6 +129,94 @@ function RouteBadge({ className }: { className?: string }) {
   );
 }
 
+const GEM_COLORS = [
+  { name: 'Rubin', color: '#ef233c', shadow: 'rgba(239, 35, 60, 0.6)' },
+  { name: 'Szafir', color: '#0077b6', shadow: 'rgba(0, 119, 182, 0.6)' },
+  { name: 'Szmaragd', color: '#06d6a0', shadow: 'rgba(6, 214, 160, 0.6)' },
+  { name: 'Topaz', color: '#ffd166', shadow: 'rgba(255, 209, 102, 0.6)' },
+  { name: 'Ametyst', color: '#7209b7', shadow: 'rgba(114, 9, 183, 0.6)' },
+  { name: 'Bursztyn', color: '#f77f00', shadow: 'rgba(247, 127, 0, 0.6)' },
+  { name: 'Turkus', color: '#4ea8de', shadow: 'rgba(78, 168, 222, 0.6)' },
+  { name: 'Diament', color: '#ffffff', shadow: 'rgba(255, 255, 255, 0.8)' },
+];
+
+function formatAsStone(item: string) {
+  const normalized = item.trim();
+  if (normalized.toLowerCase().startsWith('kamień') || normalized.toLowerCase().startsWith('kamien')) {
+    return normalized;
+  }
+  return `Kamień ${normalized}`;
+}
+
+function ExplorerShield({ activeCount }: { activeCount: number }) {
+  const slotsCount = 8;
+  const radius = 55;
+  const centerX = 80;
+  const centerY = 80;
+
+  return (
+    <svg viewBox="0 0 160 160" className="w-36 h-36 drop-shadow-md mx-auto">
+      {/* Outer shield rim */}
+      <circle cx={centerX} cy={centerY} r="72" fill="#2d2214" stroke="#8b6b4c" strokeWidth="3" />
+      {/* Inner shield background */}
+      <circle cx={centerX} cy={centerY} r="65" fill="#4a3721" stroke="#362512" strokeWidth="2" />
+      {/* Wooden texture lines inside shield */}
+      <path d="M 80 15 A 65 65 0 0 0 80 145" stroke="#362512" strokeWidth="1.5" fill="none" opacity="0.4" />
+      <path d="M 25 80 A 65 65 0 0 0 135 80" stroke="#362512" strokeWidth="1.5" fill="none" opacity="0.4" />
+      
+      {/* Core emblem */}
+      <circle cx={centerX} cy={centerY} r="25" fill="#1a120b" stroke="#8b6b4c" strokeWidth="2" />
+      <polygon points="80,63 85,73 95,73 87,79 90,89 80,83 70,89 73,79 65,73 75,73" fill="#f4d35e" className="animate-pulse" />
+
+      {/* Slots & Gems */}
+      {Array.from({ length: slotsCount }).map((_, i) => {
+        const angle = (i * 2 * Math.PI) / slotsCount - Math.PI / 2;
+        const x = centerX + radius * Math.cos(angle);
+        const y = centerY + radius * Math.sin(angle);
+        const isActive = i < activeCount;
+        const gem = GEM_COLORS[i % GEM_COLORS.length];
+
+        return (
+          <g key={i}>
+            {/* Slot placeholder */}
+            <circle 
+              cx={x} 
+              cy={y} 
+              r="10" 
+              fill={isActive ? '#1a120b' : '#2b1c11'} 
+              stroke={isActive ? gem.color : '#8b6b4c'} 
+              strokeWidth="1.5" 
+              strokeDasharray={isActive ? 'none' : '2 2'} 
+            />
+            {/* Active glowing gem */}
+            {isActive && (
+              <motion.circle
+                cx={x}
+                cy={y}
+                r="7"
+                fill={gem.color}
+                animate={{ 
+                  scale: [1, 1.2, 1],
+                  filter: [
+                    `drop-shadow(0 0 2px ${gem.color})`,
+                    `drop-shadow(0 0 6px ${gem.color})`,
+                    `drop-shadow(0 0 2px ${gem.color})`
+                  ]
+                }}
+                transition={{ 
+                  duration: 2 + (i * 0.2), 
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+              />
+            )}
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
 function App() {
   const [logoHovered, setLogoHovered] = useState(false);
   const [step, setStep] = useState<Step>('onboarding');
@@ -141,6 +229,7 @@ function App() {
   const [plannedRoute, setPlannedRoute] = useState<POI[]>([]);
   const [leafletLoaded, setLeafletLoaded] = useState(false);
   const [showInventory, setShowInventory] = useState(false);
+  const [shieldAnimationDone, setShieldAnimationDone] = useState(false);
 
   // Local state for tracking current step's quiz status
   const [quizSolved, setQuizSolved] = useState(false);
@@ -353,6 +442,7 @@ function App() {
     setPlannedRoute([]);
     setPhotoSavedUrl(null);
     setCurrentTab('adventure');
+    setShieldAnimationDone(false);
   };
 
   const startAdventure = async () => {
@@ -564,23 +654,48 @@ function App() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="bg-amber-50 dark:bg-amber-950/30 border-b border-amber-200 dark:border-amber-900/40 px-6 py-3.5 z-20"
+              className="bg-amber-50 dark:bg-amber-950/30 border-b border-amber-200 dark:border-amber-900/40 px-6 py-4 z-20"
             >
-              <p className="text-[10px] font-extrabold text-amber-800 dark:text-amber-300 uppercase tracking-wider mb-2">
-                Zebrany Ekwipunek ({currentInventory.length})
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {currentInventory.map((item: string, idx: number) => (
-                  <motion.span
-                    key={idx}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: idx * 0.05 }}
-                    className="inline-flex items-center gap-1 bg-[#efdfc3] dark:bg-[#2b271d] text-[#8b6b4c] dark:text-[#c4b5a2] text-xs font-bold px-3 py-1.5 rounded-lg border border-[#eadabe] dark:border-[#3c3424]"
-                  >
-                    👜 {item}
-                  </motion.span>
-                ))}
+              <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center md:items-start gap-6">
+                {/* Explorer Shield Visual */}
+                <div className="flex-shrink-0 bg-[#2d1c11]/10 dark:bg-black/20 p-2.5 rounded-2xl border border-amber-200/40 dark:border-amber-900/20 flex items-center justify-center">
+                  <ExplorerShield activeCount={currentInventory.length} />
+                </div>
+                
+                {/* List of items */}
+                <div className="flex-1 w-full space-y-3">
+                  <div>
+                    <h4 className="text-[10px] font-extrabold text-amber-800 dark:text-amber-300 uppercase tracking-wider">
+                      Tarcza Odkrywcy ({currentInventory.length}/8 Kamieni)
+                    </h4>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
+                      Rozwiązuj zagadki, aby zebrać wszystkie 8 kamieni i skompletować tarczę!
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {currentInventory.map((item: string, idx: number) => {
+                      const gem = GEM_COLORS[idx % GEM_COLORS.length];
+                      return (
+                        <motion.span
+                          key={idx}
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: idx * 0.05 }}
+                          className="inline-flex items-center gap-1.5 bg-[#efdfc3] dark:bg-[#2b271d] text-[#8b6b4c] dark:text-[#c4b5a2] text-xs font-bold px-3 py-1.5 rounded-lg border border-[#eadabe] dark:border-[#3c3424]"
+                        >
+                          <span 
+                            className="w-2.5 h-2.5 rounded-full inline-block"
+                            style={{ 
+                              backgroundColor: gem.color,
+                              boxShadow: `0 0 4px ${gem.color}`
+                            }}
+                          />
+                          {formatAsStone(item)}
+                        </motion.span>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
             </motion.div>
           )}
@@ -951,10 +1066,10 @@ function App() {
                         animate={{ opacity: 1, scale: 1 }}
                         className="flex items-center gap-2.5 p-3 bg-amber-500/10 border border-amber-500/25 rounded-xl mb-4"
                       >
-                        <span className="text-xl">🔑</span>
+                        <span className="text-xl">🔮</span>
                         <div>
-                          <p className="text-[9px] font-extrabold text-amber-700 dark:text-amber-300 uppercase tracking-wide">Znaleziono przedmiot!</p>
-                          <p className="text-xs font-bold text-amber-900 dark:text-amber-100">{story.item_found}</p>
+                          <p className="text-[9px] font-extrabold text-amber-700 dark:text-amber-300 uppercase tracking-wide">Znaleziono kamień!</p>
+                          <p className="text-xs font-bold text-amber-900 dark:text-amber-100">{formatAsStone(story.item_found)}</p>
                         </div>
                       </motion.div>
                     )}
@@ -1083,16 +1198,16 @@ function App() {
                                   }}
                                   className="text-4xl mx-auto w-fit filter drop-shadow-md select-none"
                                 >
-                                  👜
+                                  🔮
                                 </motion.div>
                                 <h4 className="text-xs font-serif font-extrabold text-amber-800 dark:text-amber-300 uppercase tracking-wide">
-                                  Nowy przedmiot w plecaku!
+                                  Nowy kamień tarczy zdobyty!
                                 </h4>
                                 <p className="text-sm font-extrabold text-slate-800 dark:text-white">
-                                  {story.item_found}
+                                  {formatAsStone(story.item_found)}
                                 </p>
                                 <p className="text-[10px] text-slate-500 dark:text-slate-400">
-                                  Przedmiot został pomyślnie schowany do Waszego ekwipunku!
+                                  Kamień został pomyślnie osadzony w Waszym ekwipunku!
                                 </p>
                               </motion.div>
                             )}
@@ -1139,7 +1254,35 @@ function App() {
 
                         <div className="space-y-2">
                           {isGameFinished ? (
-                            photoSavedUrl ? (
+                            !shieldAnimationDone ? (
+                              <div className="p-5 bg-gradient-to-br from-[#3e2715] to-[#25170b] text-white rounded-2xl border-2 border-[#8b6b4c] shadow-2xl text-center space-y-4 animate-in fade-in zoom-in-95">
+                                <motion.div
+                                  initial={{ scale: 0.5, rotate: -180 }}
+                                  animate={{ scale: 1, rotate: 0 }}
+                                  transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                                  className="w-full flex justify-center"
+                                >
+                                  <ExplorerShield activeCount={8} />
+                                </motion.div>
+                                <div className="space-y-1.5">
+                                  <span className="inline-block bg-[#efdfc3] text-[#8b6b4c] text-[9px] font-extrabold px-2 py-0.5 rounded uppercase tracking-wider">
+                                    Zwycięstwo!
+                                  </span>
+                                  <h3 className="font-serif text-base font-extrabold text-[#f4d35e] leading-snug">
+                                    🎉 Tarcza Odkrywcy Ukończona!
+                                  </h3>
+                                  <p className="text-[10px] text-[#e0cfb8] leading-relaxed">
+                                    Zebraliście wszystkie 8 kamieni mądrości i ułożyliście je na tarczy! Zagadki zostały rozwiązane, a Wasza wyprawa dobiegła końca. Gratulacje!
+                                  </p>
+                                </div>
+                                <button
+                                  onClick={() => setShieldAnimationDone(true)}
+                                  className="w-full py-3 bg-[#f4d35e] text-slate-900 font-extrabold rounded-xl hover:bg-yellow-400 transition-all shadow-md flex justify-center items-center gap-1.5 text-xs cursor-pointer active:scale-95"
+                                >
+                                  📸 Przejdź do pamiątkowego zdjęcia
+                                </button>
+                              </div>
+                            ) : photoSavedUrl ? (
                               <div className="p-5 bg-gradient-to-br from-yellow-500 to-amber-600 text-white rounded-xl shadow-md text-center animate-in face-in zoom-in">
                                 <Sparkles className="w-10 h-10 mx-auto mb-2 text-yellow-100 animate-pulse" />
                                 <h3 className="text-lg font-bold mb-1">🎉 Zdjęcie Zapisane!</h3>
@@ -1158,7 +1301,7 @@ function App() {
                                 onPhotoSaved={(url) => setPhotoSavedUrl(url)}
                               />
                             ) : (
-                              <div className="p-5 bg-gradient-to-br from-[#0d3b66] to-[#0f5379] text-white rounded-xl shadow-md text-center animate-in fade-in zoom-in space-y-4">
+                              <div className="p-5 bg-gradient-to-br from-[#0d3b66] to-[#0f5379] text-white rounded-xl shadow-md text-center animate-in face-in zoom-in space-y-4">
                                 <Sparkles className="w-10 h-10 mx-auto mb-1 text-yellow-100 animate-pulse" />
                                 <h3 className="text-lg font-bold">🎉 Ukończyłeś Grę!</h3>
                                 <p className="text-xs text-blue-100">
