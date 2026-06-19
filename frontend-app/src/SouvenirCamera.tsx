@@ -56,6 +56,12 @@ export function SouvenirCamera({ userId, city, lat, lon, onPhotoSaved }: Souveni
   const dragRef = useRef<boolean>(false);
   const startDragPos = useRef({ x: 0, y: 0 });
 
+  // Refs for multi-touch gestures
+  const startTouchDistance = useRef<number | null>(null);
+  const startTouchAngle = useRef<number | null>(null);
+  const startScale = useRef<number>(1.0);
+  const startRotation = useRef<number>(0);
+
   // Start Camera Stream
   useEffect(() => {
     let activeStream: MediaStream | null = null;
@@ -95,25 +101,61 @@ export function SouvenirCamera({ userId, city, lat, lon, onPhotoSaved }: Souveni
 
   const handleMouseUpOrLeave = () => {
     dragRef.current = false;
+    startTouchDistance.current = null;
+    startTouchAngle.current = null;
   };
 
-  // Touch drag for mobile
+  // Touch drag & gesture controls for mobile
   const handleTouchStart = (e: React.TouchEvent) => {
     if (e.touches.length === 1) {
-      dragRef.current = true;
-      startDragPos.current = {
-        x: e.touches[0].clientX - overlayPos.x,
-        y: e.touches[0].clientY - overlayPos.y
-      };
+      const target = e.target as HTMLElement;
+      const isFilter = target.closest('.filter-overlay') || target.classList.contains('filter-overlay');
+      if (isFilter) {
+        dragRef.current = true;
+        startDragPos.current = {
+          x: e.touches[0].clientX - overlayPos.x,
+          y: e.touches[0].clientY - overlayPos.y
+        };
+      }
+    } else if (e.touches.length === 2) {
+      const t1 = e.touches[0];
+      const t2 = e.touches[1];
+      const dx = t2.clientX - t1.clientX;
+      const dy = t2.clientY - t1.clientY;
+      startTouchDistance.current = Math.hypot(dx, dy);
+      startTouchAngle.current = Math.atan2(dy, dx);
+      startScale.current = overlayScale;
+      startRotation.current = overlayRotation;
+      dragRef.current = false; // Disable dragging when pinching/rotating
     }
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (!dragRef.current || e.touches.length !== 1) return;
-    setOverlayPos({
-      x: e.touches[0].clientX - startDragPos.current.x,
-      y: e.touches[0].clientY - startDragPos.current.y
-    });
+    if (e.touches.length === 1 && dragRef.current) {
+      setOverlayPos({
+        x: e.touches[0].clientX - startDragPos.current.x,
+        y: e.touches[0].clientY - startDragPos.current.y
+      });
+    } else if (e.touches.length === 2 && startTouchDistance.current !== null && startTouchAngle.current !== null) {
+      const t1 = e.touches[0];
+      const t2 = e.touches[1];
+      const dx = t2.clientX - t1.clientX;
+      const dy = t2.clientY - t1.clientY;
+      const distance = Math.hypot(dx, dy);
+      const angle = Math.atan2(dy, dx);
+
+      // Pinch to Zoom
+      const newScale = startScale.current * (distance / startTouchDistance.current);
+      setOverlayScale(Math.min(Math.max(newScale, 0.5), 2.5));
+
+      // Rotate gesture
+      const angleDiff = angle - startTouchAngle.current;
+      let angleDiffDeg = (angleDiff * 180) / Math.PI;
+      let newRotation = startRotation.current + angleDiffDeg;
+      while (newRotation > 180) newRotation -= 360;
+      while (newRotation < -180) newRotation += 360;
+      setOverlayRotation(Math.round(newRotation));
+    }
   };
 
   // Take Snapshot & render to canvas
@@ -270,6 +312,7 @@ export function SouvenirCamera({ userId, city, lat, lon, onPhotoSaved }: Souveni
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUpOrLeave}
         onMouseLeave={handleMouseUpOrLeave}
+        onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleMouseUpOrLeave}
       >
@@ -287,13 +330,12 @@ export function SouvenirCamera({ userId, city, lat, lon, onPhotoSaved }: Souveni
             {/* Live Filter Overlay */}
             <div
               onMouseDown={handleMouseDown}
-              onTouchStart={handleTouchStart}
               style={{
                 transform: `translate(${overlayPos.x}px, ${overlayPos.y}px) rotate(${overlayRotation}deg) scale(${overlayScale})`,
                 cursor: 'move',
                 touchAction: 'none'
               }}
-              className="absolute w-28 h-28 flex items-center justify-center pointer-events-auto"
+              className="filter-overlay absolute w-28 h-28 flex items-center justify-center pointer-events-auto"
             >
               <img 
                 src={FILTERS[activeFilter]} 

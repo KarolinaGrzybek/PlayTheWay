@@ -1006,8 +1006,8 @@ function App() {
                                 btnStyle = "border-rose-500 bg-rose-50/50 dark:bg-rose-950/20 text-rose-800 dark:text-rose-300";
                                 badgeStyle = "bg-rose-500 text-white";
                               }
-                            } else if (quizFeedback && isCorrect) {
-                              // Reveal correct answer if user got it wrong
+                            } else if (quizFeedback === 'correct' && isCorrect) {
+                              // Reveal correct answer if user got it right
                               btnStyle = "border-emerald-500/70 bg-emerald-50/20 dark:bg-emerald-950/10 text-emerald-800 dark:text-emerald-300";
                               badgeStyle = "bg-emerald-500/70 text-white";
                             }
@@ -1043,6 +1043,60 @@ function App() {
                             <p className="text-xs text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1.5 animate-pulse">
                               ✨ Doskonale! Wasza odpowiedź jest prawidłowa.
                             </p>
+                            
+                            {story.item_found && (
+                              <motion.div
+                                initial={{ opacity: 0, scale: 0.3, y: 50, rotate: -10 }}
+                                animate={{ opacity: 1, scale: 1, y: 0, rotate: 0 }}
+                                transition={{ 
+                                  type: "spring",
+                                  stiffness: 260,
+                                  damping: 20,
+                                  delay: 0.2
+                                }}
+                                className="p-4 bg-gradient-to-br from-amber-50 to-amber-100 dark:from-slate-900 dark:to-amber-950/20 border border-amber-300 dark:border-amber-900/50 rounded-2xl shadow-md text-center space-y-2 relative overflow-hidden"
+                              >
+                                <motion.div 
+                                  animate={{ scale: [1, 1.2, 1], rotate: [0, 90, 0] }}
+                                  transition={{ duration: 3, repeat: Infinity }}
+                                  className="absolute -right-2 -top-2 text-2xl opacity-40 select-none"
+                                >
+                                  ✨
+                                </motion.div>
+                                <motion.div 
+                                  animate={{ scale: [1, 1.15, 1], rotate: [0, -45, 0] }}
+                                  transition={{ duration: 4, repeat: Infinity }}
+                                  className="absolute -left-2 -bottom-2 text-2xl opacity-40 select-none"
+                                >
+                                  🎒
+                                </motion.div>
+
+                                <motion.div
+                                  animate={{ 
+                                    y: [0, -8, 0],
+                                    scale: [1, 1.1, 1]
+                                  }}
+                                  transition={{
+                                    duration: 2,
+                                    repeat: Infinity,
+                                    ease: "easeInOut"
+                                  }}
+                                  className="text-4xl mx-auto w-fit filter drop-shadow-md select-none"
+                                >
+                                  👜
+                                </motion.div>
+                                <h4 className="text-xs font-serif font-extrabold text-amber-800 dark:text-amber-300 uppercase tracking-wide">
+                                  Nowy przedmiot w plecaku!
+                                </h4>
+                                <p className="text-sm font-extrabold text-slate-800 dark:text-white">
+                                  {story.item_found}
+                                </p>
+                                <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                                  Przedmiot został pomyślnie schowany do Waszego ekwipunku!
+                                </p>
+                              </motion.div>
+                            )}
+
                             <button
                               onClick={() => setQuizSolved(true)}
                               className="w-full py-2.5 bg-[#0d3b66] hover:bg-[#0f5379] text-white text-xs font-bold rounded-xl transition-colors cursor-pointer"
